@@ -49,7 +49,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
+ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 # You can also set it to another string to have that shown instead of the default red dots.
@@ -78,11 +78,57 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-syntax-highlighting zsh-autosuggestions)
+#plugins=(git)
+plugins=( git zsh-syntax-highlighting zsh-autosuggestions fzf z fzf-tab tmux podman helm kubectl kube-ps1 istioctl kind ssh operator-sdk golang ansible zsh-navigation-tools)
 
 source $ZSH/oh-my-zsh.sh
 
+# config fzf-tab
+## set list-colors to enable filename colorizing
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
+zstyle ':completion:*' menu no
+# preview directory's content when completing cd
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+
 # User configuration
+#
+# M1--------------------- kube-ps1 k8s context -----------------------------------------------------
+# create manual p10s segment for kube-ps1 config
+# refer ~/.oh-my-zsh/custom/themes/powerlevel10k/internal/p10k.zsh
+# _p9k_prompt_segment $1 $2 $3 $4 $5 $6 $7
+# # * $1: Name of the function that was originally invoked.
+#       Necessary, to make the dynamic color-overwrite mechanism work.
+# * $2: Background color.
+# * $3: Foreground color.
+# * $4: An identifying icon.
+# * $5: 1 to to perform parameter expansion and process substitution.
+# * $6: If not empty but becomes empty after parameter expansion and process substitution,
+#       the segment isn't rendered.
+# * $7: Content.
+
+# sample example from ~/.omz/custom/themes/powerlevel10k/internal/p10k.zsh
+# ########################################################################
+# # Docker machine
+# prompt_docker_machine() {
+#   _p9k_prompt_segment "$0" "magenta" "$_p9k_color1" 'SERVER_ICON' 0 '' "${DOCKER_MACHINE_NAME//\%/%%}"
+# }
+
+# _p9k_prompt_docker_machine_init() {
+#   typeset -g "_p9k__segment_cond_${_p9k__prompt_side}[_p9k__segment_index]"='$DOCKER_MACHINE_NAME'
+# }
+
+prompt_kubeps() {
+  local state=${KUBE_PS1_ENABLED}    # env variable from kube-ps1 plugin(kube-ps1.sh) which is on/off when kubeps1 is enabled/disabled
+  local kubeps1=$(kube_ps1) # prompt content(kube_ps1 function) defined in kube-ps1 plugin(kube-ps1.sh) 
+  # to enable/disable kube-ps1 context: kubeon/kubeoff (use -g to make it global, accross all zsh shell)
+  _p9k_prompt_segment "$0$state" "" "" '' 0 '' "$kubeps1"
+}
+
+_p9k_prompt_kubeps_init() {
+  typeset -g "_p9k__segment_cond_${_p9k__prompt_side}[_p9k__segment_index]"=$_p9k__prompt[len+1,-1]
+}
+
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
